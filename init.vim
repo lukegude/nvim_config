@@ -1,6 +1,5 @@
 call plug#begin()
 Plug 'mhinz/vim-startify'
-"Plug 'morhetz/gruvbox'
 
 Plug 'sainnhe/everforest'
 Plug 'preservim/nerdtree', { 'on': 'NERDTreeToggle' }
@@ -14,8 +13,16 @@ Plug 'lervag/vimtex'
 Plug 'lervag/vimtex', { 'tag': 'v2.15' }
 Plug 'sbdchd/neoformat'
 
-Plug 'ryanoasis/vim-devicons'
+Plug 'nvim-tree/nvim-web-devicons'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope.nvim'
+
+Plug 'nvim-lualine/lualine.nvim'
+Plug 'tpope/vim-fugitive'
+
+Plug 'numToStr/Comment.nvim'
 call plug#end()
 
 
@@ -46,6 +53,10 @@ set splitbelow
 set ttyfast
 set spell
 set number
+
+set statusline=%f
+set statusline+=%h%m%r%=%-14.(%l,%c%V%)\ %P
+set statusline+=\ [%{FugitiveHead()}]   " <-- Git branch here
 
 " COC mappings
 set encoding=utf-8
@@ -239,6 +250,14 @@ endfunction
 nnoremap <silent> <C-t> :call ToggleTerminalBottom()<CR>
 " ---
 
+" --- Fuzzy File Search
+
+nnoremap <C-p> :lua CommandP()<CR>
+nnoremap <leader>f :Telescope live_grep<CR>
+nnoremap <leader>b :Telescope buffers<CR>
+nnoremap <leader>h :Telescope help_tags<CR>
+
+
 lua << EOF
 require'nvim-treesitter.configs'.setup {
 
@@ -250,4 +269,117 @@ highlight = {
     },
 
 }
+
+require('telescope').setup {
+  defaults = {
+    layout_config = {
+      prompt_position = 'top',
+    },
+    sorting_strategy = 'ascending',
+    layout_strategy = 'horizontal',
+  }
+}
+
+function CommandP()
+  local ok = pcall(require('telescope.builtin').git_files, { show_untracked = true })
+  if not ok then
+    require('telescope.builtin').find_files({ hidden = true })
+  end
+end
+
+require('lualine').setup {
+  options = {
+    icons_enabled = true,
+    theme = 'auto',
+    component_separators = { left = '', right = ''},
+    section_separators = { left = '', right = ''},
+    disabled_filetypes = {
+      statusline = {},
+      winbar = {},
+    },
+    ignore_focus = {},
+    always_divide_middle = true,
+    always_show_tabline = true,
+    globalstatus = false,
+    refresh = {
+      statusline = 100,
+      tabline = 100,
+      winbar = 100,
+    }
+  },
+  sections = {
+    lualine_a = {'mode'},
+    lualine_b = {'branch', 'diff', 'diagnostics'},
+    lualine_c = {'filename'},
+    lualine_x = {'encoding', 'fileformat', 'filetype'},
+    lualine_y = {'progress'},
+    lualine_z = {'location'}
+  },
+  inactive_sections = {
+    lualine_a = {},
+    lualine_b = {},
+    lualine_c = {'filename'},
+    lualine_x = {'location'},
+    lualine_y = {},
+    lualine_z = {}
+  },
+  tabline = {},
+  winbar = {},
+  inactive_winbar = {},
+  extensions = {}
+}
+
+
+
+
+require('Comment').setup(
+{
+    ---Add a space b/w comment and the line
+    padding = true,
+    ---Whether the cursor should stay at its position
+    sticky = true,
+    ---Lines to be ignored while (un)comment
+    ignore = nil,
+    ---LHS of toggle mappings in NORMAL mode
+    toggler = {
+        ---Line-comment toggle keymap
+        line = 'gcc',
+        ---Block-comment toggle keymap
+        block = 'gbc',
+    },
+    ---LHS of operator-pending mappings in NORMAL and VISUAL mode
+    opleader = {
+        ---Line-comment keymap
+        line = 'gc',
+        ---Block-comment keymap
+        block = 'gb',
+    },
+    ---LHS of extra mappings
+    extra = {
+        ---Add comment on the line above
+        above = 'gcO',
+        ---Add comment on the line below
+        below = 'gco',
+        ---Add comment at the end of line
+        eol = 'gcA',
+    },
+    ---Enable keybindings
+    ---NOTE: If given `false` then the plugin won't create any mappings
+    mappings = {
+        ---Operator-pending mapping; `gcc` `gbc` `gc[count]{motion}` `gb[count]{motion}`
+        basic = true,
+        ---Extra mapping; `gco`, `gcO`, `gcA`
+        extra = true,
+    },
+    ---Function to call before (un)comment
+    pre_hook = nil,
+    ---Function to call after (un)comment
+    post_hook = nil,
+}
+
+
+)
+
+
+
 EOF
