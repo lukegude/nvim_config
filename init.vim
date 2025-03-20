@@ -222,10 +222,9 @@ autocmd VimEnter * NERDTree | if argc() > 0 | wincmd p | endif
 " Easy toggle NERDTree
 nnoremap <silent> <C-n> :NERDTreeToggle<CR>
 
+
 " Auto-close vim if only NERDTree left
 autocmd BufEnter * if (winnr('$') == 1 && &filetype == 'nerdtree') | q | endif
-
-
 
 " ----
 
@@ -270,6 +269,9 @@ highlight = {
 
 }
 
+
+local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
 require('telescope').setup {
   defaults = {
     layout_config = {
@@ -277,7 +279,7 @@ require('telescope').setup {
     },
     sorting_strategy = 'ascending',
     layout_strategy = 'horizontal',
-  }
+}
 }
 
 function CommandP()
@@ -379,6 +381,8 @@ require('Comment').setup(
 
 
 )
+
+
 
 
 
